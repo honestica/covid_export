@@ -1,0 +1,79 @@
+<%= render layout: '/shared/public_forms_outside_active_admin', locals: {title: t('simple_form.titles.update_standard_survey_form')} do %>
+  <h5><%= I18n.t('activerecord.models.patient.one') %> : <%= @form.standard_survey.patient.full_name %> - <%= l(@form.standard_survey.patient.birthdate) %></h5>
+  <% contact_number = @form.standard_survey.patient.command_center&.phone_number %>
+  <% optional_contact = contact_number.present? ? "Vous pouvez contacter l'équipe médicale au #{contact_number}. " : '' %>
+
+  <div class="alert alert-info" role="alert">
+    <%= t('simple_form.messages.update_standard_survey_form.intro_html', optional_contact: optional_contact) %>
+  </div>
+
+  <hr/>
+
+  <%= simple_form_for(@form, method: :patch, url: sms_update_standard_survey_path(@form.standard_survey.public_token, @form.otp)) do |f| %>
+    <%= f.input :otp, as: :hidden %>
+
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input :cohabitants_recent_change, autofocus: true, as: :radio_buttons, wrapper: :vertical_collection_inline %>
+
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input(
+        :body_temperature,
+        wrapper: :input_with_help,
+        help_title: t('simple_form.messages.update_standard_survey_form.body_temperature_instructions.title'),
+        help_content: t('simple_form.messages.update_standard_survey_form.body_temperature_instructions.content'),
+        append: image_tag('temperature.jpg')
+      )
+    %>
+
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input :breathing_difficulty_borg_scale, as: :select, include_blank: false, collection: StandardSurvey.enum_filter_collection(:breathing_difficulty_borg_scales) %>
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input(
+      :heartbeats_per_minute,
+      as: :integer,
+      wrapper: :input_with_help,
+      help_title: t('simple_form.messages.update_standard_survey_form.heartbeats_per_minute_instructions.title'),
+      help_content: t('simple_form.messages.update_standard_survey_form.heartbeats_per_minute_instructions.content'),
+        append: image_tag('heart_rate.jpg')
+      )
+    %>
+
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input(
+        :respiratory_rate_in_cycles_per_minute,
+        as: :integer,
+        wrapper: :input_with_help,
+        help_title: t('simple_form.messages.update_standard_survey_form.respiratory_rate_in_cycles_per_minute_instructions.title'),
+        help_content: t('simple_form.messages.update_standard_survey_form.respiratory_rate_in_cycles_per_minute_instructions.content'),
+        append: image_tag('breathing.jpg')
+      )
+    %>
+
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input :recent_cold_chill, as: :radio_buttons, wrapper: :vertical_collection_inline %>
+    <%= survey_step total: @form.total_steps %>
+    <%= f.input :chest_pain, as: :select, include_blank: false, collection: StandardSurvey.enum_filter_collection(:chest_pains) %>
+    <%= survey_step total: @form.total_steps %>
+    <div data-controller='optionalField' data-optionalField-enable-value='false'>
+      <%= f.input :agreed_containment, as: :radio_buttons, wrapper: :vertical_collection_inline, wrapper_html: { data: {target: 'optionalField.master'}} %>
+      <%= f.input :agreed_containment_comment, as: :text, wrapper_html: { data: {target: 'optionalField.slave'}} %>
+    </div>
+
+    <% if @form.standard_survey.opt_standard_survey_general_condition? %>
+      <%= survey_step total: @form.total_steps %>
+      <%= f.input :general_condition, as: :select, include_blank: false, collection: StandardSurvey.enum_filter_collection(:general_conditions) %>
+    <% end %>
+
+    <% if @form.standard_survey.opt_standard_survey_stress_level? %>
+      <%= survey_step total: @form.total_steps %>
+      <%= f.input :stress_level, as: :select, include_blank: false, collection: StandardSurvey.enum_filter_collection(:stress_levels) %>
+    <% end %>
+
+    <% if @form.standard_survey.opt_standard_survey_diarrhea_vomiting? %>
+      <%= survey_step total: @form.total_steps %>
+      <%= f.input :diarrhea_vomiting, as: :select, include_blank: false, collection: StandardSurvey.enum_filter_collection(:diarrhea_vomitings) %>
+    <% end %>
+
+    <%= f.button :submit, value: t('simple_form.actions.update_standard_survey_form.submit'), data: { disable_with: t('simple_form.actions.update_standard_survey_form.disable_with') }, class: "btn btn-lg btn-secondary btn-block" %>
+  <% end %>
+<% end %>
